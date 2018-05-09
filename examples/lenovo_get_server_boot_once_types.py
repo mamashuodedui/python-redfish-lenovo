@@ -27,9 +27,12 @@ from redfish import redfish_logger
 import lenovo_utils as utils
 
 # Connect using the address, account name, and password
-login_host = "https://10.243.13.101"
-login_account = "USERID"
-login_password = "PASSW0RD"
+#login_host = "https://10.243.13.101"
+#login_account = "USERID"
+#login_password = "PASSW0RD"
+login_host = "https://%s" % sys.argv[1]
+login_account = sys.argv[2]
+login_password = sys.argv[3]
 
 
 ## Create a REDFISH object

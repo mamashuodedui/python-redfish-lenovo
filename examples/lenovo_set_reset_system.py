@@ -27,9 +27,12 @@ from redfish import redfish_logger
 import lenovo_utils as utils
 
 # Connect using the address, account name, and password
-login_host = "https://10.243.13.101"
-login_account = "USERID"
-login_password = "PASSW0RD"
+#login_host = "https://10.243.13.101"
+#login_account = "USERID"
+#login_password = "PASSW0RD"
+login_host = "https://%s" % sys.argv[1]
+login_account = sys.argv[2]
+login_password = sys.argv[3]
 
 
 ## Create a REDFISH object
@@ -48,7 +51,7 @@ target_url=response_system_url.dict["Actions"]["#ComputerSystem.Reset"]["target"
 
 # Prepare POST body
 post_body = {"ResetType": ""}
-post_body["ResetType"] = sys.argv[1]
+post_body["ResetType"] = sys.argv[4]
 
 # POST Reset Action
 post_response = REDFISH_OBJ.post(target_url, body=post_body)
