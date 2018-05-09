@@ -1,0 +1,18 @@
+- hosts: myhosts
+  name: get power state
+  gather_facts: False
+
+  tasks:
+  - name: Define output file
+    include_tasks: create_output_file.yml type=GetPowerState
+
+  - name: run getter scripts based on script_name
+    local_action: shell python ../examples/lenovo_get_power_state.py {{baseuri}} {{user}} {{password}}
+    register: script_output
+
+  - name: Copy results to output file
+    local_action: copy content={{ script_output.stdout_lines | to_nice_json }}
+       dest={{template}}.txt
+
+  - debug: var=script_output.stdout
+
