@@ -1,0 +1,24 @@
+- hosts: myhosts
+  name: set boot once
+  gather_facts: False
+
+  # Bootdevice options include: None, Pxe, Cd, Usb, Hdd, BiosSetup,
+  # Diags, UefiTarget
+
+  vars:
+    - bootdevice: Pxe
+
+  tasks:
+  - name: Define output file
+    include_tasks: create_output_file.yml type=SetBootOnce
+
+  - name: run getter scripts based on script_name
+    local_action: shell python ../examples/lenovo_set_boot_once.py {{baseuri}} {{user}} {{password}} {{bootdevice}}
+    register: script_output
+
+  - name: Copy results to output file
+    local_action: copy content={{ script_output.stdout_lines | to_nice_json }}
+       dest={{template}}.txt
+
+  - debug: var=script_output.stdout
+
