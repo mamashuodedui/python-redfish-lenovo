@@ -1,0 +1,13 @@
+---
+
+# Here we define global variables for our server group, but if some servers
+# require custom values place these variables in /etc/ansible/hosts to override
+# for each individual host
+
+# Credentials
+bmc_user: USERID
+bmc_pass: PASSW0RD
+
+# Local directory where all results are placed
+rootdir: /root/ansible_output
+
