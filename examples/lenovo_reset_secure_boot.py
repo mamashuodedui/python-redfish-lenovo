@@ -65,7 +65,6 @@ def reset_secure_boot(ip, login_account, login_password, system_id, reset_keys_t
         if response_system_url.status == 200:
             secure_boot_url = response_system_url.dict['SecureBoot']['@odata.id']
         else:
-            print("response_system_url Error code %s" % response_system_url.status)
             result = {'ret': False, 'msg': "response system url Error code %s" % response_system_url.status}
             REDFISH_OBJ.logout()
             return result
@@ -75,7 +74,8 @@ def reset_secure_boot(ip, login_account, login_password, system_id, reset_keys_t
             # Get the reset secure boot url
             reset_action_url = response_secure_boot_url.dict["Actions"]["#SecureBoot.ResetKeys"]["target"]
             body = {"ResetKeysType": reset_keys_type}
-            response_reset_url = REDFISH_OBJ.post(reset_action_url, body=body)
+            headers = {"Content-Type":"application/json"}
+            response_reset_url = REDFISH_OBJ.post(reset_action_url, headers=headers, body=body)
             if response_reset_url.status == 200:
                 result = {'ret': True, 'msg': "clear all keys successful"}
             else:
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     try:
         reset_keys_type = parameter_info['reset_keys_type']
     except:
-        sys.stderr.write("Please run the coommand 'python %s -h' to view the help info" % sys.argv[0])
+        sys.stderr.write("Please run the command 'python %s -h' to view the help info" % sys.argv[0])
         sys.exit(1)
 
     # Get reset secure boot result and check result
