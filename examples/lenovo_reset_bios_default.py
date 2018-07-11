@@ -73,7 +73,8 @@ def reset_bios_default(ip, login_account, login_password, system_id):
             # Get the Bios reset url
             reset_bios_url = response_bios_url.dict['Actions']['#Bios.ResetBios']['target']
             # Reset bios default
-            response_reset_bios = REDFISH_OBJ.post(reset_bios_url, None)
+            headers = {"Content-Type":"application/json"}
+            response_reset_bios = REDFISH_OBJ.post(reset_bios_url, headers=headers)
             if response_reset_bios.status == 200:
                 result = {'ret': True, 'msg': 'reset bios default successful'}
             else:
