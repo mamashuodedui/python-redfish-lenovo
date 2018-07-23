@@ -138,8 +138,10 @@ def main():
     module = AnsibleModule(         
         argument_spec = dict(             
             BmcIP      = dict(required=True, type='str'),             
+            BmcUsername    = dict(required=True, type='str'),             
             BmcUserpassword    = dict(required=True, type='str')))
     
+    bmc_ip = module.params['BmcIP']     
     bmc_user = module.params['BmcUsername']     
     bmc_pass = module.params['BmcUserpassword']
     result = get_system_log(bmc_ip, bmc_user, bmc_pass)
