@@ -64,7 +64,6 @@ def get_system_log(ip, login_account, login_password ):
 
     ## Create a REDFISH object
 
-
     # Login into the server and create a session
     try:
         REDFISH_OBJ = redfish.redfish_client(base_url=login_host, username=login_account,
@@ -138,13 +137,11 @@ from ansible.module_utils.basic import *
 def main():
     module = AnsibleModule(         
         argument_spec = dict(             
-            bmc_ip      = dict(required=True, type='str'),             
-            bmc_user    = dict(required=True, type='str'),             
-            bmc_pass    = dict(required=True, type='str')))
+            BmcIP      = dict(required=True, type='str'),             
+            BmcUserpassword    = dict(required=True, type='str')))
     
-    bmc_ip = module.params['bmc_ip']     
-    bmc_user = module.params['bmc_user']     
-    bmc_pass = module.params['bmc_pass']
+    bmc_user = module.params['BmcUsername']     
+    bmc_pass = module.params['BmcUserpassword']
     result = get_system_log(bmc_ip, bmc_user, bmc_pass)
     if result['ret'] is True:
         del result['ret']
