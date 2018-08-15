@@ -79,9 +79,10 @@ def set_bios_password(ip, login_account, login_password, system_id, bios_passwor
             # Set Password info
             PasswordName = bios_password_name
             new_password = bios_password
+            headers = {"Content-Type":"application/json"}
             parameter = {"PasswordName":PasswordName, "NewPassword":new_password}
             # Change password
-            response_change_password = REDFISH_OBJ.post(change_password_url, body=parameter)
+            response_change_password = REDFISH_OBJ.post(change_password_url, headers=headers, body=parameter)
             if response_change_password.status == 200:
                 result = {'ret': True, 'msg': 'set bios password successful'}
             else:

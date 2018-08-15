@@ -54,12 +54,15 @@ def get_system_url(base_url, system_id, redfish_obj):
         for i in range(response_systems_url.dict['Members@odata.count']):
             system_url = response_systems_url.dict["Members"][i]["@odata.id"]
             system.append(system_url)
-            return system
+        return system
     else:
         # Return parameters specify the system
         for system_x_url in Members:
             system_url = system_x_url["@odata.id"]
-            if system_id in system_url:
+            system_x_id = system_url.split('/')[-1]
+            if not system_x_id:
+                system_x_id = system_url.split('/')[-2]
+            if system_id == system_x_id:
                 system.append(system_url)
                 return system
             else:
@@ -71,9 +74,17 @@ def get_extended_error(response_body):
     :params response_body: Response from HTTP
     :type response_body: class 'redfish.rest.v1.RestResponse'
     """
-    expected_dict = response_body.dict
+    try:
+        expected_dict = response_body.dict
+    except:
+        message = response_body
+        return message
     message_dict = expected_dict["error"]["@Message.ExtendedInfo"][0]
-    return str(message_dict["Message"])
+    if "Message" in message_dict:
+        message = str(message_dict["Message"])
+    else:
+        message = str(message_dict["MessageId"])
+    return message
 
 
 def read_config(config_file):
@@ -168,13 +179,19 @@ def parse_parameter(args):
         if args.name is not None and args.value is not None:
             parameter_info['attribute_name'] = args.name
             parameter_info['attribute_value'] = args.value
+            parameter_info['jsonfile'] = args.jsonfile
+        else:
+            parameter_info['attribute_name'] = args.name
+            parameter_info['attribute_value'] = args.value
+            parameter_info['jsonfile'] = args.jsonfile
     except:
          pass
     # Get the set bios password parameter info
     try:    
-        if args.name is not None and args.biospasswd is not None:
+        if args.name is not None and args.newpasswd is not None and args.oldpasswd:
             parameter_info['bios_password_name'] = args.name
-            parameter_info['bios_password'] = args.biospasswd
+            parameter_info['old_password'] = args.oldpasswd
+            parameter_info['new_password'] = args.newpasswd
     except:
          pass
     # Get the set vlanid parameter info
@@ -233,10 +250,20 @@ def parse_parameter(args):
             parameter_info['protocol'] = args.protocol
     except:
          pass
+    # Set serial interfaces attribute
+    try:
+        if args.bitrate is not None or args.stopbits is not None or args.parity is not None or args.interface is not None:
+            parameter_info['bitrate'] = args.bitrate
+            parameter_info['stopbits'] = args.stopbits
+            parameter_info['parity'] = args.parity
+            parameter_info['interface'] = args.interface
+    except:
+        pass
 
     # Use parameters from command line to overrided Configuration file
     for key in parameter_info:
         if parameter_info[key]:
             config_ini_info[key] = parameter_info[key]
-    
+        elif key not in config_ini_info:
+            config_ini_info[key] = parameter_info[key]
     return config_ini_info

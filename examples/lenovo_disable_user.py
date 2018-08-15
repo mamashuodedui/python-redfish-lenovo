@@ -121,7 +121,7 @@ if __name__ == '__main__':
     try:
         userid = parameter_info['userid']
     except:
-        sys.stderr.write("Please run the coommand 'python %s -h' to view the help info" % sys.argv[0])
+        sys.stderr.write("Please run the command 'python %s -h' to view the help info" % sys.argv[0])
         sys.exit(1)
 
     # Get disable user result and check result
