@@ -75,7 +75,6 @@ def set_bios_attribute(ip,login_account,login_password,system_id,attribute_name,
         response_bios_url = REDFISH_OBJ.get(bios_url, None)
         if response_bios_url.status == 200:
             pending_url = response_bios_url.dict['@Redfish.Settings']['SettingsObject']['@odata.id']
-            print(pending_url)
         else:
             result = {'ret': False, 'msg': "response bios url Error code %s" % response_bios_url.status}
             REDFISH_OBJ.logout()
