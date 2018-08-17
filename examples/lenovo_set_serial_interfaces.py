@@ -106,8 +106,13 @@ def set_serial_interfaces(ip, login_account, login_password, bitrate, stopbits, 
             return result
 
         # Get the serial interfaces url form serial interfaces url collection
-        for i in serial_interfaces_url_collection:
-            serial_interfaces_x_url = i['@odata.id']
+        # for i in serial_interfaces_url_collection:
+        try:
+            index = int(interface) - 1
+            if(index == -1):
+                result = {'ret': False, 'msg': "The specified Interface Id does not exist."}
+                return result
+            serial_interfaces_x_url = serial_interfaces_url_collection[index]['@odata.id']
             body = {}
             if bitrate:
                 body['BitRate'] = bitrate
@@ -115,8 +120,8 @@ def set_serial_interfaces(ip, login_account, login_password, bitrate, stopbits, 
                 body['Parity'] = parity
             if stopbits:
                 body['StopBits'] = stopbits
-            if interface:
-                body['InterfaceEnabled'] = interface
+            # if interface:
+            #     body['InterfaceEnabled'] = interface
 
             serial_interfaces_x_url_response = REDFISH_OBJ.patch(serial_interfaces_x_url, body=body)
             if serial_interfaces_x_url_response.status == 200:
@@ -127,6 +132,8 @@ def set_serial_interfaces(ip, login_account, login_password, bitrate, stopbits, 
                 except:
                     error_message = serial_interfaces_x_url_response
                 result = {'ret': False, 'msg': "response serial_interfaces_x_url_response Error code %s \nerror_message: %s" % (serial_interfaces_x_url_response.status, error_message)}
+        except IndexError:
+            result = {'ret': False, 'msg': "The specified Interface Id does not exist."}
 
     result['ret'] = True
     # Logout of the current session
