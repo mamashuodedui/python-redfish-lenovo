@@ -26,7 +26,7 @@ import redfish
 import lenovo_utils as utils
 
 
-def set_serial_interfaces(ip, login_account, login_password, bitrate, stopbits, parity, interface):
+def set_serial_interfaces(ip, login_account, login_password, interfaceid, bitrate, stopbits, parity, enabled, climode, state, clikey):
     """Set serial interfaces
     :params ip: BMC IP address
     :type ip: string
@@ -34,6 +34,22 @@ def set_serial_interfaces(ip, login_account, login_password, bitrate, stopbits, 
     :type login_account: string
     :params login_password: BMC user password
     :type login_password: string
+    :params interfaceid: serial interface instance id
+    :type interfaceid: string
+    :params bitrate: This property shall indicate the transmit and receive speed of the serial connection
+    :type bitrate: string
+    :params stopbits: This property shall indicate the stop bits for the serial connection
+    :type stopbits: string
+    :params parity: This property shall indicate parity information for a serial connection
+    :type parity: string
+    :params enabled: The value of this property shall be a boolean indicating whether this interface is enabled
+    :type enabled: string
+    :params climode: This property shall indicate command-line interface mode
+    :type climode: string
+    :params state: Specify the enabled and disabled state of the serial interface
+    :type state: string
+    :params clikey: The key sequence to exit serial redirection and enter CLI
+    :type clikey: string
     :returns: returns set serial interfaces result when succeeded or error message when failed
     """
     result = {}
@@ -106,22 +122,66 @@ def set_serial_interfaces(ip, login_account, login_password, bitrate, stopbits, 
             return result
 
         # Get the serial interfaces url form serial interfaces url collection
-        # for i in serial_interfaces_url_collection:
         try:
-            index = int(interface) - 1
-            if(index == -1):
-                result = {'ret': False, 'msg': "The specified Interface Id does not exist."}
-                return result
+            if interfaceid:
+                index = int(interfaceid) - 1
+                if(index == -1):
+                    result = {'ret': False, 'msg': "The specified Interface Id does not exist."}
+                    return result
+            else:
+                index = 0
             serial_interfaces_x_url = serial_interfaces_url_collection[index]['@odata.id']
             body = {}
+            if (enabled == "0" and state == "Enabled") or (enabled == "1" and state == "Offline"):
+                result = {'ret':False, 'msg':'InterfaceEnabled is "true" then SerialInterfaceState must be "Enabled".InterfaceEnabled is "false" then SerialInterfaceState must be "Offline".'}     
+                return result
             if bitrate:
                 body['BitRate'] = bitrate
             if parity:
                 body['Parity'] = parity
             if stopbits:
                 body['StopBits'] = stopbits
-            # if interface:
-            #     body['InterfaceEnabled'] = interface
+            if enabled:
+                body['InterfaceEnabled'] = bool(int(enabled))
+            else:
+                if state == "Enable":
+                    body['InterfaceEnabled'] = True
+                elif state == "Offline":
+                    body['InterfaceEnabled'] = False
+            response_serial_interfaces_x_url = REDFISH_OBJ.get(serial_interfaces_x_url, None)
+            if response_serial_interfaces_x_url.status == 200:
+                if "Oem" in response_serial_interfaces_x_url.dict:
+                    if "Lenovo" in response_serial_interfaces_x_url.dict['Oem']:
+                        lenovo = {}
+                        if climode:
+                            lenovo["CLIMode"] = climode
+                        if state:
+                            lenovo['SerialInterfaceState'] = state
+                        else:
+                            try:
+                                if body['InterfaceEnabled']:
+                                    lenovo['SerialInterfaceState'] = "Enabled"
+                                else:
+                                    lenovo['SerialInterfaceState'] = "Offline"
+                            except KeyError:
+                                pass
+                        if clikey:
+                            lenovo['EnterCLIKeySequence'] = clikey
+            else:
+                try:
+                    error_message = utils.get_extended_error(response_serial_interfaces_x_ur)
+                except:
+                    error_message = response_serial_interfaces_x_ur
+                result = {'ret': False, 'msg': "response response_serial_interfaces_x_ur Error code %s \nerror_message: %s" % (response_serial_interfaces_x_ur.status, error_message)}
+                return result
+            try:
+                if lenovo:
+                    body["Oem"] = {"Lenovo":lenovo}
+            except:
+                pass
+            if not body:
+                result = {'ret':False, 'msg':"Please specify the serial interface setting attribute, at least one"}
+                return result
 
             serial_interfaces_x_url_response = REDFISH_OBJ.patch(serial_interfaces_x_url, body=body)
             if serial_interfaces_x_url_response.status == 200:
@@ -135,7 +195,6 @@ def set_serial_interfaces(ip, login_account, login_password, bitrate, stopbits, 
         except IndexError:
             result = {'ret': False, 'msg': "The specified Interface Id does not exist."}
 
-    result['ret'] = True
     # Logout of the current session
     REDFISH_OBJ.logout()
     return result       
@@ -145,12 +204,28 @@ import argparse
 def add_parameter():
     """Add set serial interfaces attribute parameter"""
     argget = utils.create_common_parameter_list()
-    argget.add_argument('--bitrate', type=str, default='', help='Fetch from the ADAM variable. Support: [9600, 19200, 38400, 57600, 115200]')
-    argget.add_argument('--stopbits', type=str, default='', help='Fetch from the ADAM variable.')
-    argget.add_argument('--parity', type=str, default='', help='Fetch from the ADAM variable. Support: ["None", "Even", "Odd"]')
-    argget.add_argument('--interface', type=str, default='', help='Fetch from the ADAM variable.')
+    argget.add_argument('--interfaceid', type=str, default='', help='serial interface instance id(default first instance 1)')
+    argget.add_argument('--bitrate', type=str, default='', help='This property shall indicate the transmit and receive speed of the serial connection.Support: [9600, 19200, 38400, 57600, 115200]')
+    argget.add_argument('--stopbits', type=str, default='', help='This property shall indicate the stop bits for the serial connection.Support:["1","2"].')
+    argget.add_argument('--parity', type=str, default='', help='This property shall indicate parity information for a serial connection.Support: ["None", "Even", "Odd"]')
+    argget.add_argument('--enabled', type=str, default='', help='The value of this property shall be a boolean indicating whether this interface is enabled.Support:(0:false,1:true)')
+    argget.add_argument('--climode', type=str, default='', help='This property shall indicate command-line interface mode.Support:["Compatible", "UserDefined"]')
+    argget.add_argument('--state', type=str, default='', help='Specify the enabled and disabled state of the serial interface.Support:["Enabled", "Offline"]')
+    argget.add_argument('--clikey', type=str, default='', help='The key sequence to exit serial redirection and enter CLI')
     args = argget.parse_args()
     parameter_info = utils.parse_parameter(args)
+    # Parse the added parameters
+    try:
+        parameter_info['bitrate'] = args.bitrate
+        parameter_info['stopbits'] = args.stopbits
+        parameter_info['parity'] = args.parity
+        parameter_info['interfaceid'] = args.interfaceid
+        parameter_info['enabled'] = args.enabled
+        parameter_info['climode'] = args.climode
+        parameter_info['state'] = args.state
+        parameter_info['clikey'] = args.clikey
+    except:
+        pass
     return parameter_info
 
 
@@ -164,17 +239,22 @@ if __name__ == '__main__':
     login_password = parameter_info["passwd"]
 
     # Get set info from the parameters user specified
-    try:
-        bitrate = parameter_info['bitrate']
-        stopbits = parameter_info['stopbits']
-        parity = parameter_info['parity']
-        interface = parameter_info['interface']
-    except:
+    bitrate = parameter_info['bitrate']
+    stopbits = parameter_info['stopbits']
+    parity = parameter_info['parity']
+    interfaceid = parameter_info['interfaceid']
+    enabled = parameter_info['enabled']
+    climode = parameter_info['climode']
+    state = parameter_info['state']
+    clikey = parameter_info['clikey']
+    
+    # check parameter for user specified
+    if not bitrate and not stopbits and not parity and not enabled and not climode and not state and not clikey:
         sys.stderr.write("Please run the command 'python %s -h' to view the help info" % sys.argv[0])
         sys.exit(1)
     
     # Set serial interfaces and check result
-    result = set_serial_interfaces(ip, login_account, login_password, bitrate, stopbits, parity, interface)
+    result = set_serial_interfaces(ip, login_account, login_password, interfaceid, bitrate, stopbits, parity, enabled, climode, state, clikey)
     if result['ret'] is True:
         del result['ret']
         sys.stdout.write(json.dumps(result['msg'], sort_keys=True, indent=2))
