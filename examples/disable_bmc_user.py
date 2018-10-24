@@ -1,6 +1,6 @@
 ###
 #
-# Lenovo Redfish examples - enable user
+# Lenovo Redfish examples - disable user
 #
 # Copyright Notice:
 #
@@ -26,8 +26,8 @@ import json
 import lenovo_utils as utils
 
 
-def enable_user(ip, login_account, login_password, userid):
-    """Enable user   
+def disable_user(ip, login_account, login_password, userid):
+    """Disable user   
     :params ip: BMC IP address
     :type ip: string
     :params login_account: BMC user name
@@ -36,13 +36,13 @@ def enable_user(ip, login_account, login_password, userid):
     :type login_password: string
     :params system_id: ComputerSystem instance id(None: first instance, All: all instances)
     :type system_id: None or string
-    :returns: returns enable user result when succeeded or error message when failed
+    :returns: returns disable user result when succeeded or error message when failed
     """
     result = {}
     login_host = "https://" + ip
     try:
-        # Create a REDFISH object
         # Connect using the BMC address, account name, and password
+        # Create a REDFISH object
         REDFISH_OBJ = redfish.redfish_client(base_url=login_host, username=login_account,
                                              password=login_password, default_prefix='/redfish/v1')
         # Login into the server and create a session
@@ -50,24 +50,21 @@ def enable_user(ip, login_account, login_password, userid):
     except:
         result = {'ret': False, 'msg': "Please check the username, password, IP is correct\n"}
         return result
-
-    # Get response_base_url resource
+    # Get ServiceRoot resource
     response_base_url = REDFISH_OBJ.get('/redfish/v1', None)
 
-    # Get account service url
+    # Get response_account_service_url
     if response_base_url.status == 200:
         account_service_url = response_base_url.dict['AccountService']['@odata.id']
-    else:  
-        result = {'ret': False, 'msg': "response base url Error code %s" % response_base_url.status}
+    else:
         REDFISH_OBJ.logout()
+        result = {'ret': False, 'msg': "response base url Error code %s" % response_base_url.status}
         return result
-
     # Get AccountService resource
     response_account_service_url = REDFISH_OBJ.get(account_service_url, None)
     if response_account_service_url.status == 200:
         accounts_url = response_account_service_url.dict['Accounts']['@odata.id']
         userid = userid
-
         # Get the disable user account url
         if accounts_url[-1] == '/':
             accounts_url += str(userid)
@@ -78,17 +75,20 @@ def enable_user(ip, login_account, login_password, userid):
             etag = response_account_url.dict['@odata.etag']
         else:
             etag = ""
-        username = response_account_url.dict["UserName"]
-        headers = {"If-Match": etag}
+        username = response_account_url.dict['UserName']
+        headers = {"If-Match": etag,}
         # Set the body info
-        parameter = {"Enabled": True,
-                     "UserName": username}
+        parameter = {
+                     "UserName":username,
+                     "Enabled": False
+                     }
         response_accounts_url = REDFISH_OBJ.patch(accounts_url, body=parameter, headers=headers)
-        
+      
         if response_accounts_url.status == 200:
-            result = {'ret': True, 'msg': "User %s enable successfully" %userid}
-        else:
-            result = {'ret': False, 'msg': "response accounts url Error code %s" % response_accounts_url.status}
+            
+            result = {'ret': True, 'msg': "User %s disabled successfully" %userid}
+        else:    
+            result = {'ret': False, 'msg': "response account url Error code %s" % response_accounts_url.status}
             REDFISH_OBJ.logout()
             return result
     else:
@@ -100,7 +100,7 @@ def enable_user(ip, login_account, login_password, userid):
 
 import argparse
 def add_parameter():
-    """Add enable user id parameter"""
+    """Add disable user id parameter"""
     argget = utils.create_common_parameter_list()
     argget.add_argument('--userid', type=str, help='Input the disable userid(1-12)')
     args = argget.parse_args()
@@ -121,11 +121,11 @@ if __name__ == '__main__':
     try:
         userid = parameter_info['userid']
     except:
-        sys.stderr.write("Please run the command 'python %s -h' to view the help info" % sys.argv[0])
+        sys.stderr.write("Please run the coommand 'python %s -h' to view the help info" % sys.argv[0])
         sys.exit(1)
 
-    # Get enable user result and check result
-    result = enable_user(ip, login_account, login_password, userid)
+    # Get disable user result and check result
+    result = disable_user(ip, login_account, login_password, userid)
     if result['ret'] is True:
         del result['ret']
         sys.stdout.write(json.dumps(result['msg'], sort_keys=True, indent=2))
