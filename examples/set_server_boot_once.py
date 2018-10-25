@@ -67,7 +67,7 @@ def set_server_boot_once(ip, login_account, login_password, system_id, boot_sour
         patch_response = REDFISH_OBJ.patch(system_url, body=patch_body)
         # If Response does not return 200/OK, print the response Extended Error message
         if patch_response.status  == 200:
-            result = {'ret': False, 'msg': "Set server boot once %s successful" % boot_source}
+            result = {'ret': True, 'msg': "Set server boot once %s successful" % boot_source}
         else:
             message = utils.get_extended_error(patch_response)
             result = {'ret': False, 'msg': "Error message is %s" % message}
@@ -107,7 +107,7 @@ if __name__ == '__main__':
     result = set_server_boot_once(ip, login_account, login_password, system_id, boot_source)
     if result['ret'] is True:
         del result['ret']
-        sys.stdout.write(json.dumps(result['entries'], sort_keys=True, indent=2))
+        sys.stdout.write(json.dumps(result['msg'], sort_keys=True, indent=2))
     else:
         sys.stderr.write(result['msg'])
 
