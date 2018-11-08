@@ -102,7 +102,7 @@ def lenovo_set_bmc_timezone(ip, login_account, login_password,timezone):
 
 import argparse
 def add_parameter():
-    """Add set bios attribute parameter"""
+    """Add set bmc timezone parameter"""
     parameter_info = {}
     argget = utils.create_common_parameter_list()
     help_str = "Input the time zone you want to set,you can  set the value only in the list:"

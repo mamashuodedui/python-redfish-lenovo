@@ -32,7 +32,7 @@ def lenovo_get_bmc_time(ip, login_account, login_password):
         :type login_account: string
         :params login_password: BMC user password
         :type login_password: string
-        :returns: returns set timezoom result when succeeded or error message when failed
+        :returns: returns get bmc time result when succeeded or error message when failed
         """
 
     result = {}
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     login_account = parameter_info["user"]
     login_password = parameter_info["passwd"]
 
-    # Get BMC inventory and check result
+    # Get BMC time and check result
     result = lenovo_get_bmc_time(ip, login_account, login_password)
     if result['ret'] is True:
         del result['ret']

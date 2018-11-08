@@ -110,7 +110,7 @@ def lenovo_sync_bmc_time(ip, login_account, login_password,method):
 
 import argparse
 def add_parameter():
-    """Add set bios attribute parameter"""
+    """Add sync bmc time parameter"""
     parameter_info = {}
     #syncmethod
     argget = utils.create_common_parameter_list()
@@ -130,7 +130,7 @@ if __name__ == '__main__':
     login_password = parameter_info["passwd"]
     method = parameter_info["method"]
 
-    #set bmc timezoom
+    #sync bmc time
     result = lenovo_sync_bmc_time(ip, login_account, login_password, method)
 
     if result['ret'] is True:
