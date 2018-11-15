@@ -71,9 +71,17 @@ def get_extended_error(response_body):
     :params response_body: Response from HTTP
     :type response_body: class 'redfish.rest.v1.RestResponse'
     """
-    expected_dict = response_body.dict
-    message_dict = expected_dict["error"]["@Message.ExtendedInfo"][0]
-    return str(message_dict["Message"])
+    try:
+        expected_dict = response_body.dict
+        message_dict = expected_dict["error"]["@Message.ExtendedInfo"][0]
+        if "Message" in message_dict:
+            message = str(message_dict["Message"])
+        else:
+            message = str(message_dict["MessageId"])
+        return message
+    except:
+        message = response_body
+        return message
 
 
 def read_config(config_file):
@@ -139,12 +147,7 @@ def parse_parameter(args):
             parameter_info['reset_keys_type'] = args.resettype
     except:
          pass    
-    # Get the disable , enable userid info
-    try:    
-        if args.userid is not None:
-            parameter_info['userid'] = args.userid
-    except:
-        pass
+
     # Get the set reset system parameter info
     try:    
         if args.resettype is not None:
@@ -197,27 +200,14 @@ def parse_parameter(args):
             parameter_info['attribute_name'] = args.name
     except:
          pass
-    # Get the update user role parameter info
-    try:    
-        if args.userid is not None and args.roleid is not None:
-            parameter_info['userid'] = args.userid
-            parameter_info['roleid'] = args.roleid
-    except:
-         pass
-    # Get the update user password pasrmeter info
-    try:    
-        if args.userid is not None and args.newpasswd is not None:
-            parameter_info['userid'] = args.userid
-            parameter_info['new_passwd'] = args.newpasswd
-    except:
-         pass
-    # Get schema pasrmeter info
+
+    # Get schema parameter info
     try:    
         if args.schema is not None:
             parameter_info['schemaprefix'] = args.schema
     except:
          pass
-    # Get bios attribute pasrmeter info
+    # Get bios attribute parameter info
     try:    
         if args.bios is not None:
             parameter_info['bios_get'] = args.bios
