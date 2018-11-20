@@ -236,7 +236,7 @@ def add_parameter():
     argget.add_argument('--newuserpasswd', type=str, help='Input the user new userpasswd')
     help_str = "The value of this parameter shall be the privileges that this user includes."
     help_str += "For super user, this property shall be Supervisor. default is super user. "
-    help_str += "For pre-defined user, this property shall be readOnly. "
+    help_str += "For pre-defined user, this property shall be ReadOnly. "
     help_str += "For custom user some implementations may not allow writing this property."
     help_str += "You can only choose one or more values in the list:[UserroleManagement,RemoteConsoleAccess,RemoteConsoleAndVirtualMediaAcccess,RemoteServerPowerRestartAccess,"
     help_str += "AbilityClearEventLogs,AdapterConfiguration_Basic,AdapterConfiguration_NetworkingAndSecurity,AdapterConfiguration_Advanced]"

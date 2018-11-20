@@ -38,7 +38,7 @@ def lenovo_sync_bmc_time(ip, login_account, login_password,method):
         """
     result = {}
     list = ("SyncwithHost", "SyncwithNTP")
-    if parameter_info["method"] not in list:
+    if method not in list:
         result = {'ret': False, 'msg': "method only can be SyncwithHost or SyncwithNTP,please check you input"}
         return result
 
